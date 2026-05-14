@@ -1,0 +1,33 @@
+# Code Owners
+# This file defines who is responsible for code in different areas
+
+# Default owners for everything
+* @firstall31-dot
+
+# Documentation
+/docs/ @firstall31-dot
+/README.md @firstall31-dot
+
+# DevOps and Infrastructure
+/.github/ @firstall31-dot
+/docker/ @firstall31-dot
+/wrangler.jsonc @firstall31-dot
+/.env.example @firstall31-dot
+
+# Frontend
+/src/components/ @firstall31-dot
+/src/routes/ @firstall31-dot
+/src/hooks/ @firstall31-dot
+/src/lib/ @firstall31-dot
+
+# Configuration
+/package.json @firstall31-dot
+/package-lock.json @firstall31-dot
+/tsconfig.json @firstall31-dot
+/vite.config.ts @firstall31-dot
+/eslint.config.js @firstall31-dot
+/.prettierrc @firstall31-dot
+/components.json @firstall31-dot
+
+# Public Assets
+/public/ @firstall31-dot

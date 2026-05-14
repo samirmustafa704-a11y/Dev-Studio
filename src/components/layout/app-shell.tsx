@@ -1,0 +1,258 @@
+import { useEffect, useState, type ReactNode } from "react";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import {
+  LayoutDashboard,
+  Sparkles,
+  Bot,
+  Component as ComponentIcon,
+  LayoutTemplate,
+  Code2,
+  Plus,
+  Flame,
+  Code,
+  Heart,
+  GraduationCap,
+  Menu,
+  X,
+  Search,
+  Users,
+} from "lucide-react";
+import { CommandPalette } from "./command-palette";
+import { UserMenu } from "@/components/auth/user-menu";
+import { useAuth } from "@/hooks/use-auth";
+
+const WORKSPACE_NAV = [
+  { to: "/", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/tools", label: "Tools", icon: Code2 },
+] as const;
+
+const COMMUNICATION_NAV = [
+  { to: "/social", label: "Social Media", icon: ComponentIcon, match: ["/social"], search: { tab: "linkedin" } },
+  { to: "/mails", label: "Mails & Messaging", icon: Bot, match: ["/mails"], search: { tab: "cover-letter" } },
+  { to: "/connectors", label: "Connectors", icon: Users, match: ["/connectors"], search: { tab: "companies" } },
+] as const;
+
+const SKILLS_NAV = [
+  { to: "/tech-skills", label: "Tech Skills", icon: Code, match: ["/tech-skills"], search: { tab: "frontend" } },
+  { to: "/soft-skills", label: "Soft Skills", icon: Heart, match: ["/soft-skills"], search: { tab: "communication" } },
+] as const;
+
+export function AppShell({ children }: { children: ReactNode }) {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPaletteOpen((o) => !o);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  // Close mobile drawer on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  return (
+    <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
+      {/* Mobile backdrop */}
+      {mobileOpen && (
+        <div
+          onClick={() => setMobileOpen(false)}
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[100] md:hidden"
+        />
+      )}
+
+      {/* Sidebar */}
+      <nav
+        className={`fixed md:static inset-y-0 left-0 z-[110] w-64 md:w-60 shrink-0 border-r border-border bg-sidebar flex flex-col overflow-y-auto transition-transform md:translate-x-0 ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="h-14 px-4 flex items-center gap-2.5 border-b border-border/40 mb-2">
+          <div className="size-7 rounded-md bg-primary grid place-items-center">
+            <Flame className="size-4 text-primary-foreground" />
+          </div>
+          <div className="flex flex-col leading-tight">
+            <span className="font-semibold tracking-tight text-sm">Dev Studio</span>
+            <span className="text-[10px] text-muted-foreground font-mono">v0.2 · personal hub</span>
+          </div>
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="ml-auto md:hidden size-7 grid place-items-center rounded-md text-muted-foreground hover:text-foreground"
+            aria-label="Close menu"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+
+        {/* Workspace section */}
+        <div className="px-3 mt-2">
+          <p className="px-2 mb-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+            Workspace
+          </p>
+          <ul className="space-y-0.5">
+            {WORKSPACE_NAV.map((item) => {
+              const Icon = item.icon;
+              const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
+              return (
+                <li key={item.to}>
+                  <Link
+                    to={item.to}
+                    className={`flex items-center gap-2.5 px-2.5 py-1.5 text-sm rounded-md transition-colors ${
+                      active
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground ring-1 ring-border"
+                        : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/40"
+                    }`}
+                  >
+                    <Icon className="size-4 shrink-0" />
+                    <span>{item.label}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+
+        {/* Communication section */}
+        <div className="px-3 mt-4">
+          <p className="px-2 mb-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+            Communication
+          </p>
+          <ul className="space-y-0.5">
+            {COMMUNICATION_NAV.map((item) => {
+              const Icon = item.icon;
+              const active = item.match.some((p) => pathname.startsWith(p));
+              return (
+                <li key={item.label}>
+                  <Link
+                    to={item.to}
+                    search={item.search}
+                    className={`flex items-center gap-2.5 px-2.5 py-1.5 text-sm rounded-md transition-colors ${
+                      active
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground ring-1 ring-border"
+                        : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/40"
+                    }`}
+                  >
+                    <Icon className="size-4 shrink-0" />
+                    <span>{item.label}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+
+        {/* Skills section */}
+        <div className="px-3 mt-4">
+          <p className="px-2 mb-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+            Skills
+          </p>
+          <ul className="space-y-0.5">
+            {SKILLS_NAV.map((item) => {
+              const Icon = item.icon;
+              const active = item.match.some((p) => pathname.startsWith(p));
+              return (
+                <li key={item.label}>
+                  <Link
+                    to={item.to}
+                    search={item.search}
+                    className={`flex items-center gap-2.5 px-2.5 py-1.5 text-sm rounded-md transition-colors ${
+                      active
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground ring-1 ring-border"
+                        : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/40"
+                    }`}
+                  >
+                    <Icon className="size-4 shrink-0" />
+                    <span>{item.label}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+
+        {/* Interview Prep */}
+        <div className="px-3 mt-4">
+          <p className="px-2 mb-1 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+            Resources
+          </p>
+          <ul className="space-y-0.5">
+            <li>
+              <Link
+                to="/interview"
+                className={`flex items-center gap-2.5 px-2.5 py-1.5 text-sm rounded-md transition-colors ${
+                  pathname.startsWith("/interview")
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground ring-1 ring-border"
+                    : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/40"
+                }`}
+              >
+                <GraduationCap className="size-4 shrink-0" />
+                <span>Interview</span>
+              </Link>
+            </li>
+          </ul>
+        </div>
+
+        <div className="mt-auto p-3 border-t border-border">
+          <button
+            onClick={() => setPaletteOpen(true)}
+            className="w-full flex items-center justify-between gap-2 px-2.5 py-1.5 text-xs rounded-md bg-card hover:bg-sidebar-accent/50 transition-colors text-muted-foreground"
+          >
+            <span className="flex items-center gap-2"><Search className="size-3.5" /> Quick search</span>
+            <kbd className="font-mono bg-muted text-muted-foreground px-1.5 py-0.5 rounded border border-border text-[10px]">⌘K</kbd>
+          </button>
+          <UserMenu />
+        </div>
+      </nav>
+
+      {/* Main */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="h-14 shrink-0 border-b border-border flex items-center justify-between gap-2 px-4 sm:px-8 bg-background/80 backdrop-blur-sm">
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="md:hidden size-9 grid place-items-center rounded-md text-muted-foreground hover:text-foreground hover:bg-card border border-border shrink-0"
+            aria-label="Open menu"
+          >
+            <Menu className="size-4" />
+          </button>
+          <button
+            onClick={() => setPaletteOpen(true)}
+            className="group flex items-center gap-2.5 flex-1 min-w-0 max-w-md text-left px-3 py-1.5 rounded-md bg-card border border-border hover:border-ring/40 transition-colors"
+          >
+            <Search className="size-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground truncate">Search…</span>
+            <kbd className="ml-auto font-mono bg-muted text-muted-foreground px-1.5 py-0.5 rounded border border-border text-[10px]">
+              ⌘K
+            </kbd>
+          </button>
+          <div className="flex items-center gap-2 ml-2 sm:ml-4 shrink-0">
+            <Link
+              to="/tools"
+              className="hidden md:inline-flex text-xs font-mono uppercase tracking-wider text-muted-foreground hover:text-foreground border border-border rounded px-2 py-1"
+            >
+              Library
+            </Link>
+            <Link
+              to="/tools"
+              className="inline-flex items-center gap-1.5 bg-primary text-primary-foreground text-sm font-medium px-2.5 sm:px-3 py-1.5 rounded-md hover:opacity-90 transition-opacity"
+            >
+              <Plus className="size-4" /> <span className="hidden sm:inline">New asset</span>
+            </Link>
+          </div>
+        </header>
+
+        <main className="flex-1 flex flex-col min-h-0">{children}</main>
+      </div>
+
+      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
+    </div>
+  );
+}
