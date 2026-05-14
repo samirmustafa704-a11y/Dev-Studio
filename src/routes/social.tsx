@@ -3,6 +3,10 @@ import { useState, useEffect } from "react";
 import { PageHeader, PageContainer, TabNav, SplitLayout } from "@/components/layout";
 import { Linkedin, Twitter, Instagram } from "lucide-react";
 import { z } from "zod";
+import { useForge, newId } from "@/lib/store";
+import { SocialSidebar } from "@/components/social/social-sidebar";
+import { PostEditor } from "@/components/social/post-editor";
+import type { SocialDraft } from "@/types/tools";
 
 const socialSearchSchema = z.object({
   tab: z.string().optional(),
@@ -16,29 +20,10 @@ export const Route = createFileRoute("/social")({
   component: SocialPage,
 });
 
-import { SocialSidebar, type Draft } from "@/components/social/social-sidebar";
-import { PostEditor } from "@/components/social/post-editor";
-
 const SOCIAL_TABS = [
   { id: "linkedin", label: "LinkedIn", icon: Linkedin },
   { id: "twitter", label: "X / Twitter", icon: Twitter },
   { id: "instagram", label: "Instagram", icon: Instagram },
-];
-
-// Seed Data
-const INITIAL_DRAFTS: Draft[] = [
-  {
-    id: "1",
-    platform: "linkedin",
-    content: "Excited to share my new side project! #buildinpublic",
-    updatedAt: "2 mins ago",
-  },
-  {
-    id: "2",
-    platform: "twitter",
-    content: "Just shipped a massive update to the UI. The layout engine is finally stable.",
-    updatedAt: "1 hour ago",
-  },
 ];
 
 function SocialPage() {
@@ -46,61 +31,39 @@ function SocialPage() {
   const search = Route.useSearch();
   const tab = search.tab || "linkedin";
 
-  const [drafts, setDrafts] = useState<Draft[]>(INITIAL_DRAFTS);
+  const { socialDrafts, upsertSocialDraft, deleteSocialDraft } = useForge();
   const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    const saved = localStorage.getItem("dev-studio-social-drafts");
-    if (saved) {
-      try {
-        setDrafts(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to parse social drafts", e);
-      }
-    }
-  }, []);
-
-  // Sync to localStorage
-  useEffect(() => {
-    localStorage.setItem("dev-studio-social-drafts", JSON.stringify(drafts));
-  }, [drafts]);
 
   // Switch active draft when platform changes
   useEffect(() => {
-    const platformDrafts = drafts.filter((d) => d.platform === tab);
+    const platformDrafts = socialDrafts.filter((d) => d.platform === tab);
     if (platformDrafts.length > 0 && !platformDrafts.some((d) => d.id === activeDraftId)) {
       setActiveDraftId(platformDrafts[0].id);
     } else if (platformDrafts.length === 0) {
       setActiveDraftId(null);
     }
-  }, [tab, drafts, activeDraftId]);
+  }, [tab, socialDrafts, activeDraftId]);
 
   const handleNewDraft = () => {
-    const newDraft: Draft = {
-      id: Date.now().toString(),
+    const next = {
+      id: newId("soc"),
       platform: tab,
       content: "",
-      updatedAt: "Just now",
+      mediaUrls: [],
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
     };
-    setDrafts([newDraft, ...drafts]);
-    setActiveDraftId(newDraft.id);
+    upsertSocialDraft(next);
+    setActiveDraftId(next.id);
   };
 
-  const handleUpdateDraft = (updates: Partial<Draft>) => {
-    setDrafts((prev) =>
-      prev.map((d) => (d.id === activeDraftId ? { ...d, ...updates, updatedAt: "Just now" } : d)),
-    );
+  const handleUpdateDraft = (updates: Partial<SocialDraft>) => {
+    const current = socialDrafts.find(d => d.id === activeDraftId);
+    if (!current) return;
+    upsertSocialDraft({ ...current, ...updates, updatedAt: Date.now() });
   };
 
-  const handleDeleteDraft = (id: string) => {
-    setDrafts((prev) => prev.filter((d) => d.id !== id));
-    if (activeDraftId === id) {
-      setActiveDraftId(null);
-    }
-  };
-
-  const activeDraft = drafts.find((d) => d.id === activeDraftId) || null;
+  const activeDraft = socialDrafts.find((d) => d.id === activeDraftId) || null;
 
   return (
     <PageContainer>
@@ -128,11 +91,11 @@ function SocialPage() {
           sidebar={
             <SocialSidebar
               platform={tab}
-              drafts={drafts}
+              drafts={socialDrafts}
               activeDraftId={activeDraftId}
               onSelectDraft={setActiveDraftId}
               onNewDraft={handleNewDraft}
-              onDeleteDraft={handleDeleteDraft}
+              onDeleteDraft={deleteSocialDraft}
             />
           }
           sidebarWidth="lg:w-[260px]"
@@ -143,7 +106,7 @@ function SocialPage() {
               platform={tab}
               activeDraft={activeDraft}
               onUpdateDraft={handleUpdateDraft}
-              onSave={() => console.log("Saved!", activeDraft)}
+              onSave={() => console.log("Synced to Supabase!")}
             />
           </div>
         </SplitLayout>

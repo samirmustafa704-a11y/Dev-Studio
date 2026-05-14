@@ -64,3 +64,32 @@ export interface Snippet {
   createdAt: number;
   updatedAt: number;
 }
+
+export interface Connector {
+  id: string;
+  type: string; // companies, hr, clients
+  name: string;
+  email?: string;
+  phone?: string;
+  notes?: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface SocialDraft {
+  id: string;
+  platform: string; // linkedin, twitter, instagram
+  content: string;
+  mediaUrls: string[];
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface MailTemplate {
+  id: string;
+  channel: string; // cover-letter, gmail, whatsapp
+  subject?: string;
+  content: string;
+  createdAt: number;
+  updatedAt: number;
+}

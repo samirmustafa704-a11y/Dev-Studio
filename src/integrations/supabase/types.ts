@@ -1,8 +1,6 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5";
   };
@@ -28,6 +26,378 @@ export type Database = {
           created_at?: string;
           display_name?: string | null;
           id?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      prompts: {
+        Row: {
+          id: string;
+          user_id: string;
+          title: string;
+          description: string | null;
+          category: string | null;
+          tags: string[] | null;
+          body: string;
+          variables: string[] | null;
+          model: string | null;
+          favorite: boolean | null;
+          usage_count: number | null;
+          versions: Json | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          title: string;
+          description?: string | null;
+          category?: string | null;
+          tags?: string[] | null;
+          body: string;
+          variables?: string[] | null;
+          model?: string | null;
+          favorite?: boolean | null;
+          usage_count?: number | null;
+          versions?: Json | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          title?: string;
+          description?: string | null;
+          category?: string | null;
+          tags?: string[] | null;
+          body?: string;
+          variables?: string[] | null;
+          model?: string | null;
+          favorite?: boolean | null;
+          usage_count?: number | null;
+          versions?: Json | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      agents: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          role: string | null;
+          system_prompt: string;
+          tools: string[] | null;
+          model: string | null;
+          temperature: number | null;
+          status: string | null;
+          tags: string[] | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          role?: string | null;
+          system_prompt: string;
+          tools?: string[] | null;
+          model?: string | null;
+          temperature?: number | null;
+          status?: string | null;
+          tags?: string[] | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          role?: string | null;
+          system_prompt?: string;
+          tools?: string[] | null;
+          model?: string | null;
+          temperature?: number | null;
+          status?: string | null;
+          tags?: string[] | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      components: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          description: string | null;
+          category: string | null;
+          tags: string[] | null;
+          code: string;
+          dependencies: string[] | null;
+          favorite: boolean | null;
+          usage_count: number | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          description?: string | null;
+          category?: string | null;
+          tags?: string[] | null;
+          code: string;
+          dependencies?: string[] | null;
+          favorite?: boolean | null;
+          usage_count?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          description?: string | null;
+          category?: string | null;
+          tags?: string[] | null;
+          code?: string;
+          dependencies?: string[] | null;
+          favorite?: boolean | null;
+          usage_count?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      templates: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          description: string | null;
+          stack: string[] | null;
+          tags: string[] | null;
+          structure: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          description?: string | null;
+          stack?: string[] | null;
+          tags?: string[] | null;
+          structure?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          description?: string | null;
+          stack?: string[] | null;
+          tags?: string[] | null;
+          structure?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      snippets: {
+        Row: {
+          id: string;
+          user_id: string;
+          title: string;
+          language: string;
+          description: string | null;
+          code: string;
+          tags: string[] | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          title: string;
+          language: string;
+          description?: string | null;
+          code: string;
+          tags?: string[] | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          title?: string;
+          language?: string;
+          description?: string | null;
+          code?: string;
+          tags?: string[] | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      connectors: {
+        Row: {
+          id: string;
+          user_id: string;
+          type: string;
+          name: string;
+          email: string | null;
+          phone: string | null;
+          notes: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          type: string;
+          name: string;
+          email?: string | null;
+          phone?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          type?: string;
+          name?: string;
+          email?: string | null;
+          phone?: string | null;
+          notes?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      social_drafts: {
+        Row: {
+          id: string;
+          user_id: string;
+          platform: string;
+          content: string;
+          media_urls: string[] | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          platform: string;
+          content: string;
+          media_urls?: string[] | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          platform?: string;
+          content?: string;
+          media_urls?: string[] | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      mail_templates: {
+        Row: {
+          id: string;
+          user_id: string;
+          channel: string;
+          subject: string | null;
+          content: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          channel: string;
+          subject?: string | null;
+          content: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          channel?: string;
+          subject?: string | null;
+          content?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      interview_questions: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          question: string;
+          answer: string;
+          difficulty: string | null;
+          domain: string;
+          tags: string[] | null;
+          is_global: boolean | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          question: string;
+          answer: string;
+          difficulty?: string | null;
+          domain: string;
+          tags?: string[] | null;
+          is_global?: boolean | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string | null;
+          question?: string;
+          answer?: string;
+          difficulty?: string | null;
+          domain?: string;
+          tags?: string[] | null;
+          is_global?: boolean | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      user_progress: {
+        Row: {
+          user_id: string;
+          item_id: string;
+          area_id: string;
+          completed: boolean | null;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          item_id: string;
+          area_id: string;
+          completed?: boolean | null;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          item_id?: string;
+          area_id?: string;
+          completed?: boolean | null;
           updated_at?: string;
         };
         Relationships: [];

@@ -1,16 +1,9 @@
 import { Linkedin, Twitter, Instagram, Plus, Trash2 } from "lucide-react";
-
-export interface Draft {
-  id: string;
-  platform: string;
-  tags?: string;
-  content: string;
-  updatedAt: string;
-}
+import type { SocialDraft } from "@/types/tools";
 
 interface SocialSidebarProps {
   platform: string;
-  drafts: Draft[];
+  drafts: SocialDraft[];
   activeDraftId: string | null;
   onSelectDraft: (id: string) => void;
   onNewDraft: () => void;
@@ -67,12 +60,9 @@ export function SocialSidebar({
                 <div className={`truncate ${activeDraftId === draft.id ? "font-medium" : ""}`}>
                   {draft.content || "New Draft"}
                 </div>
-                {draft.tags && (
-                  <div className="truncate text-[10px] text-muted-foreground mt-0.5">
-                    {draft.tags}
-                  </div>
-                )}
-                <div className="text-[10px] opacity-70 mt-1">{draft.updatedAt}</div>
+                <div className="text-[10px] opacity-70 mt-1">
+                  {new Date(draft.updatedAt).toLocaleDateString()}
+                </div>
               </div>
               <button
                 onClick={(e) => {

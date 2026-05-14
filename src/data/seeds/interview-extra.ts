@@ -618,4 +618,40 @@ export const seedInterviewExtra: InterviewQuestion[] = [
     category: "Backend Testing (Python)",
     createdAt: now,
   },
+
+  // ─── SUPABASE ────────────────────────────────────────────────────────────
+  {
+    id: q(54),
+    area: "backend",
+    difficulty: "junior",
+    question: "How does authentication work in a Supabase application?",
+    answer:
+      "Supabase Auth provides secure user management using GoTrue under the hood. You can authenticate users via email/password, magic links, or OAuth providers. When a user logs in, they receive a JWT. The client library automatically attaches this JWT to subsequent database requests. PostgREST parses the JWT and sets Postgres configuration variables, allowing Row Level Security (RLS) policies to apply auth logic securely at the database layer.",
+    tags: ["supabase", "auth", "jwt"],
+    category: "Supabase",
+    createdAt: now,
+  },
+  {
+    id: q(55),
+    area: "backend",
+    difficulty: "mid",
+    question: "What is Row Level Security (RLS) in Supabase and why is it important?",
+    answer:
+      "Row Level Security (RLS) is a PostgreSQL feature used heavily by Supabase to secure data at the database layer instead of the API layer. It allows defining policies (using SQL) that restrict which rows a user can SELECT, INSERT, UPDATE, or DELETE. In Supabase, the user's JWT is decoded into Postgres connection variables (e.g., auth.uid()), which RLS policies use to enforce ownership and permissions directly, eliminating the need for a custom middle-tier security layer.",
+    tags: ["supabase", "rls", "security", "postgresql"],
+    category: "Supabase",
+    favorite: true,
+    createdAt: now,
+  },
+  {
+    id: q(56),
+    area: "backend",
+    difficulty: "senior",
+    question: "What is the difference between Postgres functions (RPC) and Edge Functions in Supabase?",
+    answer:
+      "Postgres functions (RPCs) run inside the database using PL/pgSQL or plv8. They are ideal for data-intensive operations, aggregations, or anything that requires direct, fast access to tables. Edge Functions are serverless TypeScript functions running on Deno globally across a CDN. They are better suited for integrating with third-party APIs (like Stripe or OpenAI), listening to webhooks, or offloading CPU-intensive tasks that shouldn't tie up database resources.",
+    tags: ["supabase", "edge-functions", "rpc", "architecture"],
+    category: "Supabase",
+    createdAt: now,
+  },
 ];

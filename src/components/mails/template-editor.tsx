@@ -1,5 +1,5 @@
 import { Save } from "lucide-react";
-import type { MailTemplate } from "./mails-sidebar";
+import type { MailTemplate } from "@/types/tools";
 import { Input, TextArea } from "@/components/tools/shared";
 import {
   Select,
@@ -9,7 +9,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 interface TemplateEditorProps {
   channel: string;
@@ -52,8 +51,8 @@ export function TemplateEditor({
             <span className="text-sm font-medium text-muted-foreground w-12 shrink-0">To:</span>
             <Input
               type="text"
-              value={activeTemplate.recipient || ""}
-              onChange={(e) => onUpdateTemplate({ recipient: e.target.value })}
+              value=""
+              onChange={() => {}}
               className="flex-1"
               placeholder={channel === "whatsapp" ? "+1 (555) 000-0000" : "recipient@example.com"}
             />
@@ -61,8 +60,8 @@ export function TemplateEditor({
           <div className="flex-1 min-w-0 flex items-center gap-3">
             <span className="text-sm font-medium text-muted-foreground w-12 shrink-0">Tone:</span>
             <Select
-              value={activeTemplate.tone || "professional"}
-              onValueChange={(value) => onUpdateTemplate({ tone: value })}
+              value="professional"
+              onValueChange={() => {}}
             >
               <SelectTrigger className="flex-1 h-9">
                 <SelectValue placeholder="Select tone" />
@@ -101,7 +100,7 @@ export function TemplateEditor({
           />
           <div className="mt-4 pt-4 border-t border-border flex flex-col sm:flex-row justify-between sm:items-center gap-2 text-[11px] text-muted-foreground font-mono">
             <span>{(activeTemplate.content || "").length} characters</span>
-            <span>Last updated: {activeTemplate.updatedAt}</span>
+            <span>Last updated: {new Date(activeTemplate.updatedAt).toLocaleString()}</span>
           </div>
         </div>
       </div>

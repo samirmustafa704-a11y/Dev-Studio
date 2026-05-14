@@ -1,5 +1,5 @@
-import { Save, Mail, Phone, User, Link as LinkIcon } from "lucide-react";
-import type { Connector } from "./connectors-sidebar";
+import { Save, Mail, Phone, User } from "lucide-react";
+import type { Connector } from "@/types/tools";
 import { Input, TextArea } from "@/components/tools/shared";
 import { Button } from "@/components/ui/button";
 
@@ -91,7 +91,7 @@ export function ConnectorEditor({
             placeholder={`Add notes about this ${type === "companies" ? "company" : "contact"}...\n\n- Meeting dates\n- Interaction history\n- Important context`}
           />
           <div className="mt-4 pt-4 border-t border-border flex justify-between items-center text-[11px] text-muted-foreground font-mono">
-            <span>Last updated: {activeConnector.updatedAt}</span>
+            <span>Last updated: {new Date(activeConnector.updatedAt).toLocaleString()}</span>
           </div>
         </div>
       </div>

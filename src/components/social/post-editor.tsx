@@ -1,13 +1,13 @@
 import { Save, Image as ImageIcon, Hash } from "lucide-react";
-import type { Draft } from "./social-sidebar";
+import type { SocialDraft } from "@/types/tools";
 import { Input, TextArea } from "@/components/tools/shared";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface PostEditorProps {
   platform: string;
-  activeDraft: Draft | null;
-  onUpdateDraft: (updates: Partial<Draft>) => void;
+  activeDraft: SocialDraft | null;
+  onUpdateDraft: (updates: Partial<SocialDraft>) => void;
   onSave: () => void;
 }
 
@@ -48,8 +48,8 @@ export function PostEditor({ platform, activeDraft, onUpdateDraft, onSave }: Pos
             <Hash className="size-4 text-muted-foreground shrink-0" />
             <Input
               type="text"
-              value={activeDraft.tags || ""}
-              onChange={(e) => onUpdateDraft({ tags: e.target.value })}
+              value=""
+              onChange={() => {}}
               className="flex-1"
               placeholder="Add tags (e.g., #buildinpublic, #tech)"
             />
@@ -82,7 +82,9 @@ export function PostEditor({ platform, activeDraft, onUpdateDraft, onSave }: Pos
             >
               {currentLength} / {limit} characters
             </span>
-            <span className="text-muted-foreground">Last updated: {activeDraft.updatedAt}</span>
+            <span className="text-muted-foreground">
+              Last updated: {new Date(activeDraft.updatedAt).toLocaleString()}
+            </span>
           </div>
         </div>
       </div>

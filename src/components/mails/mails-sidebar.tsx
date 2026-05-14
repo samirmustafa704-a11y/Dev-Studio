@@ -1,14 +1,5 @@
 import { Mail, MessageCircle, FileText, Plus, Trash2 } from "lucide-react";
-
-export interface MailTemplate {
-  id: string;
-  channel: string;
-  recipient?: string;
-  tone?: string;
-  subject?: string;
-  content: string;
-  updatedAt: string;
-}
+import type { MailTemplate } from "@/types/tools";
 
 interface MailsSidebarProps {
   channel: string;
@@ -69,12 +60,14 @@ export function MailsSidebar({
                 <div
                   className={`truncate ${activeTemplateId === template.id ? "font-medium" : ""}`}
                 >
-                  {template.subject || template.recipient || "Untitled Template"}
+                  {template.subject || "Untitled Template"}
                 </div>
                 <div className="truncate text-xs text-muted-foreground mt-0.5">
                   {template.content || "Empty content"}
                 </div>
-                <div className="text-[10px] opacity-70 mt-1">{template.updatedAt}</div>
+                <div className="text-[10px] opacity-70 mt-1">
+                  {new Date(template.updatedAt).toLocaleDateString()}
+                </div>
               </div>
               <button
                 onClick={(e) => {

@@ -9,9 +9,12 @@ import {
   Container,
   Layout,
   Cpu,
+  Plus,
 } from "lucide-react";
 import { SplitLayout } from "../layout";
 import { Input } from "@/components/ui/input";
+import { useForge } from "@/lib/store";
+import { QAEditorDialog } from "./qa-editor-dialog";
 
 const DIFFICULTIES = ["easy", "medium", "hard"] as const;
 const DOMAINS = [
@@ -23,51 +26,34 @@ const DOMAINS = [
   { id: "core", label: "Core CS", icon: Cpu },
 ];
 
-const QUESTIONS = [
-  {
-    id: "1",
-    question: "What is the Virtual DOM and how does it work in React?",
-    answer:
-      "The Virtual DOM is a lightweight copy of the real DOM. React uses it to improve performance by calculating the minimal number of changes needed to update the UI (diffing) and then applying those changes in a single batch (reconciliation).",
-    difficulty: "medium",
-    domain: "frontend",
-    tags: ["react", "javascript"],
-  },
-  {
-    id: "2",
-    question: "Explain the difference between SQL and NoSQL databases.",
-    answer:
-      "SQL databases are relational, table-based, and have predefined schemas (e.g., PostgreSQL). NoSQL databases are non-relational, document or key-value based, and have dynamic schemas (e.g., MongoDB). SQL is better for structured data and complex queries, while NoSQL is better for scalability and hierarchical data.",
-    difficulty: "easy",
-    domain: "database",
-    tags: ["sql", "nosql"],
-  },
-  {
-    id: "3",
-    question: "How do you handle race conditions in a distributed system?",
-    answer:
-      "Race conditions can be handled using distributed locking (e.g., Redis Redlock), optimistic concurrency control (versioning), or by using idempotent operations and message queues with atomic delivery guarantees.",
-    difficulty: "hard",
-    domain: "architecture",
-    tags: ["distributed-systems", "concurrency"],
-  },
-];
-
 export function QuestionList() {
+  const { interviewQuestions, deleteInterviewQuestion, toggleFavoriteInterviewQuestion } = useForge();
   const [search, setSearch] = useState("");
   const [difficulty, setDifficulty] = useState<string | null>(null);
   const [domain, setDomain] = useState<string>("frontend");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingQ, setEditingQ] = useState<any>(null);
 
   const filtered = useMemo(() => {
-    return QUESTIONS.filter((q) => {
+    return interviewQuestions.filter((q) => {
       const matchesSearch =
         q.question.toLowerCase().includes(search.toLowerCase()) ||
         q.answer.toLowerCase().includes(search.toLowerCase());
       const matchesDifficulty = !difficulty || q.difficulty === difficulty;
-      const matchesDomain = q.domain === domain;
+      const matchesDomain = q.area === domain || q.category === domain;
       return matchesSearch && matchesDifficulty && matchesDomain;
     });
-  }, [search, difficulty, domain]);
+  }, [interviewQuestions, search, difficulty, domain]);
+
+  const handleAdd = () => {
+    setEditingQ(null);
+    setDialogOpen(true);
+  };
+
+  const handleEdit = (q: any) => {
+    setEditingQ(q);
+    setDialogOpen(true);
+  };
 
   const sidebar = (
     <div className="flex flex-col h-full min-h-0">
@@ -124,70 +110,93 @@ export function QuestionList() {
           );
         })}
       </nav>
+      
+      <div className="p-4 border-t border-border">
+        <button 
+          onClick={handleAdd}
+          className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
+        >
+          <Plus className="size-4" /> Add Question
+        </button>
+      </div>
     </div>
   );
 
   return (
-    <SplitLayout sidebar={sidebar} sidebarWidth="lg:w-[280px]" className="border-t border-border">
-      <div className="flex-1 overflow-y-auto scrollbar-thin">
-        <div className="w-full max-w-[1400px] mx-auto p-4 sm:p-8 space-y-4">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
-              {filtered.length} Questions Found
-            </h3>
-          </div>
-          {filtered.map((q) => (
-            <article
-              key={q.id}
-              className="group rounded-xl border border-border bg-card hover:border-primary/30 transition-all hover:shadow-sm overflow-hidden"
-            >
-              <div className="p-5">
-                <div className="flex items-start justify-between gap-4 mb-3">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span
-                        className={`px-1.5 py-0.5 rounded text-[9px] font-mono uppercase tracking-wider ${
-                          q.difficulty === "hard"
-                            ? "bg-primary/10 text-primary"
-                            : q.difficulty === "medium"
-                              ? "bg-primary/10 text-primary"
-                              : "bg-primary/10 text-primary"
-                        }`}
-                      >
-                        {q.difficulty}
-                      </span>
-                      <span className="text-[10px] text-muted-foreground font-mono">
-                        {DOMAINS.find((d) => d.id === q.domain)?.label}
-                      </span>
-                    </div>
-                    <h3 className="text-base font-semibold group-hover:text-primary transition-colors">
-                      {q.question}
-                    </h3>
-                  </div>
-                  <button className="shrink-0 p-2 rounded-md hover:bg-muted transition-colors opacity-0 group-hover:opacity-100">
-                    <ChevronRight className="size-4 text-muted-foreground" />
-                  </button>
-                </div>
-
-                <div className="bg-muted/30 rounded-lg p-4 text-sm text-muted-foreground leading-relaxed border border-border/50">
-                  <div className="flex items-center gap-2 mb-2 text-[10px] font-mono uppercase tracking-wider text-primary/70">
-                    <Sparkles className="size-3" /> Sample Answer
-                  </div>
-                  {q.answer}
-                </div>
-              </div>
-            </article>
-          ))}
-          {filtered.length === 0 && (
-            <div className="text-center py-20 bg-muted/10 rounded-2xl border border-dashed border-border">
-              <Search className="size-10 text-muted-foreground mx-auto mb-4 opacity-20" />
-              <p className="text-sm text-muted-foreground">
-                No questions found matching your criteria.
-              </p>
+    <>
+      <SplitLayout sidebar={sidebar} sidebarWidth="lg:w-[280px]" className="border-t border-border">
+        <div className="flex-1 overflow-y-auto scrollbar-thin">
+          <div className="w-full max-w-[1400px] mx-auto p-4 sm:p-8 space-y-4">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
+                {filtered.length} Questions Found
+              </h3>
             </div>
-          )}
+            {filtered.map((q) => (
+              <article
+                key={q.id}
+                className="group rounded-xl border border-border bg-card hover:border-primary/30 transition-all hover:shadow-sm overflow-hidden"
+              >
+                <div className="p-5">
+                  <div className="flex items-start justify-between gap-4 mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span
+                          className={`px-1.5 py-0.5 rounded text-[9px] font-mono uppercase tracking-wider bg-primary/10 text-primary`}
+                        >
+                          {q.difficulty}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground font-mono">
+                          {DOMAINS.find((d) => d.id === q.area || d.id === q.category)?.label || q.area}
+                        </span>
+                      </div>
+                      <h3 className="text-base font-semibold group-hover:text-primary transition-colors">
+                        {q.question}
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button 
+                        onClick={() => handleEdit(q)}
+                        className="p-2 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground"
+                      >
+                        <ChevronRight className="size-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="bg-muted/30 rounded-lg p-4 text-sm text-muted-foreground leading-relaxed border border-border/50">
+                    <div className="flex items-center gap-2 mb-2 text-[10px] font-mono uppercase tracking-wider text-primary/70">
+                      <Sparkles className="size-3" /> Sample Answer
+                    </div>
+                    {q.answer}
+                  </div>
+                </div>
+              </article>
+            ))}
+            {filtered.length === 0 && (
+              <div className="text-center py-20 bg-muted/10 rounded-2xl border border-dashed border-border">
+                <Search className="size-10 text-muted-foreground mx-auto mb-4 opacity-20" />
+                <p className="text-sm text-muted-foreground">
+                  No questions found matching your criteria.
+                </p>
+                <button 
+                  onClick={handleAdd}
+                  className="mt-4 text-xs text-primary hover:underline"
+                >
+                  Add the first question for this domain
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    </SplitLayout>
+      </SplitLayout>
+      
+      <QAEditorDialog 
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        editing={editingQ}
+        defaultArea={domain as any}
+      />
+    </>
   );
 }

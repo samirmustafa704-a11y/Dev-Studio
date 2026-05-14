@@ -3,6 +3,10 @@ import { useState, useEffect } from "react";
 import { PageHeader, PageContainer, TabNav, SplitLayout } from "@/components/layout";
 import { Users, Building2, Briefcase } from "lucide-react";
 import { z } from "zod";
+import { useForge, newId } from "@/lib/store";
+import { ConnectorsSidebar } from "@/components/connectors/connectors-sidebar";
+import { ConnectorEditor } from "@/components/connectors/connector-editor";
+import type { Connector } from "@/types/tools";
 
 const connectorsSearchSchema = z.object({
   tab: z.string().optional(),
@@ -16,43 +20,10 @@ export const Route = createFileRoute("/connectors")({
   component: ConnectorsPage,
 });
 
-import { ConnectorsSidebar, type Connector } from "@/components/connectors/connectors-sidebar";
-import { ConnectorEditor } from "@/components/connectors/connector-editor";
-
 const CONNECTORS_TABS = [
   { id: "companies", label: "Companies", icon: Building2 },
   { id: "hr", label: "HR Contacts", icon: Briefcase },
   { id: "clients", label: "Clients", icon: Users },
-];
-
-const INITIAL_CONNECTORS: Connector[] = [
-  {
-    id: "1",
-    type: "companies",
-    name: "TechNova Inc.",
-    email: "contact@technova.com",
-    phone: "+1 234 567 8900",
-    notes: "Looking to hire in Q3.",
-    updatedAt: "2 days ago",
-  },
-  {
-    id: "2",
-    type: "hr",
-    name: "Sarah Jenkins",
-    email: "sarah.j@example.com",
-    phone: "+1 555 123 4567",
-    notes: "Met at Tech Conference 2024.",
-    updatedAt: "1 week ago",
-  },
-  {
-    id: "3",
-    type: "clients",
-    name: "Acme Corp",
-    email: "projects@acme.com",
-    phone: "+44 20 7946 0958",
-    notes: "Interested in a frontend revamp.",
-    updatedAt: "Just now",
-  },
 ];
 
 function ConnectorsPage() {
@@ -60,25 +31,8 @@ function ConnectorsPage() {
   const search = Route.useSearch();
   const tab = search.tab || "companies";
 
-  const [connectors, setConnectors] = useState<Connector[]>(INITIAL_CONNECTORS);
+  const { connectors, upsertConnector, deleteConnector } = useForge();
   const [activeConnectorId, setActiveConnectorId] = useState<string | null>(null);
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    const saved = localStorage.getItem("dev-studio-connectors");
-    if (saved) {
-      try {
-        setConnectors(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to parse connectors", e);
-      }
-    }
-  }, []);
-
-  // Sync to localStorage
-  useEffect(() => {
-    localStorage.setItem("dev-studio-connectors", JSON.stringify(connectors));
-  }, [connectors]);
 
   // Switch active connector when tab changes
   useEffect(() => {
@@ -91,32 +45,24 @@ function ConnectorsPage() {
   }, [tab, connectors, activeConnectorId]);
 
   const handleNewConnector = () => {
-    const newConnector: Connector = {
-      id: Date.now().toString(),
+    const next: Connector = {
+      id: newId("conn"),
       type: tab,
-      name: "",
+      name: "New Contact",
       email: "",
       phone: "",
       notes: "",
-      updatedAt: "Just now",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
     };
-    setConnectors([newConnector, ...connectors]);
-    setActiveConnectorId(newConnector.id);
+    upsertConnector(next);
+    setActiveConnectorId(next.id);
   };
 
   const handleUpdateConnector = (updates: Partial<Connector>) => {
-    setConnectors((prev) =>
-      prev.map((c) =>
-        c.id === activeConnectorId ? { ...c, ...updates, updatedAt: "Just now" } : c,
-      ),
-    );
-  };
-
-  const handleDeleteConnector = (id: string) => {
-    setConnectors((prev) => prev.filter((c) => c.id !== id));
-    if (activeConnectorId === id) {
-      setActiveConnectorId(null);
-    }
+    const current = connectors.find(c => c.id === activeConnectorId);
+    if (!current) return;
+    upsertConnector({ ...current, ...updates, updatedAt: Date.now() });
   };
 
   const activeConnector = connectors.find((c) => c.id === activeConnectorId) || null;
@@ -151,7 +97,7 @@ function ConnectorsPage() {
               activeConnectorId={activeConnectorId}
               onSelectConnector={setActiveConnectorId}
               onNewConnector={handleNewConnector}
-              onDeleteConnector={handleDeleteConnector}
+              onDeleteConnector={deleteConnector}
             />
           }
           sidebarWidth="lg:w-[260px]"
@@ -162,7 +108,7 @@ function ConnectorsPage() {
               type={tab}
               activeConnector={activeConnector}
               onUpdateConnector={handleUpdateConnector}
-              onSave={() => console.log("Saved!", activeConnector)}
+              onSave={() => console.log("Synced to Supabase!")}
             />
           </div>
         </SplitLayout>

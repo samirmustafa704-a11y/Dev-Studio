@@ -1,14 +1,5 @@
 import { Users, Building2, Briefcase, Plus, Trash2 } from "lucide-react";
-
-export interface Connector {
-  id: string;
-  type: string;
-  name: string;
-  email?: string;
-  phone?: string;
-  notes: string;
-  updatedAt: string;
-}
+import type { Connector } from "@/types/tools";
 
 interface ConnectorsSidebarProps {
   type: string;
@@ -74,7 +65,9 @@ export function ConnectorsSidebar({
                 <div className="truncate text-xs text-muted-foreground mt-0.5">
                   {connector.email || connector.phone || "No contact info"}
                 </div>
-                <div className="text-[10px] opacity-70 mt-1">{connector.updatedAt}</div>
+                <div className="text-[10px] opacity-70 mt-1">
+                  {new Date(connector.updatedAt).toLocaleDateString()}
+                </div>
               </div>
               <button
                 onClick={(e) => {
