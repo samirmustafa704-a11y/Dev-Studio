@@ -44,11 +44,13 @@ export function Agents({ selectedId }: { selectedId?: string }) {
     };
     upsertAgent(a);
     select(a.id);
+    toast.success("Agent created");
   };
 
   const update = (patch: Partial<Agent>) => {
     if (!selected) return;
     upsertAgent({ ...selected, ...patch, updatedAt: Date.now() });
+    toast.success("Agent updated");
   };
 
   const sidebar = (
@@ -143,6 +145,7 @@ export function Agents({ selectedId }: { selectedId?: string }) {
                 onClick={() => {
                   deleteAgent(selected.id);
                   navigate({ search: (prev) => ({ ...prev, id: undefined }) });
+                  toast.success("Agent deleted");
                 }}
                 className="p-2 rounded-md border border-border hover:bg-destructive/10 self-end sm:self-auto"
               >

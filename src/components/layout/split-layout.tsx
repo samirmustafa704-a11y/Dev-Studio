@@ -73,7 +73,7 @@ export function SplitLayout({
       >
         <div
           className={cn(
-            "flex-1 flex flex-col transition-opacity duration-200 overflow-y-auto overflow-x-hidden scrollbar-thin relative group/sidebar",
+            "flex-1 flex flex-col transition-opacity duration-200 overflow-x-hidden relative group/sidebar",
             isOpen ? "opacity-100 delay-150" : "opacity-0 pointer-events-none",
           )}
           style={{ width: "var(--sidebar-width)" }}

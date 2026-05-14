@@ -52,6 +52,7 @@ export function Components({ selectedId }: { selectedId?: string }) {
     };
     upsertComponent(c);
     select(c.id);
+    toast.success("Component created");
   };
 
   const update = (patch: Partial<ComponentAsset>) => {
@@ -151,6 +152,7 @@ export function Components({ selectedId }: { selectedId?: string }) {
                   onClick={() => {
                     deleteComponent(selected.id);
                     navigate({ search: (prev) => ({ ...prev, id: undefined }) });
+                    toast.success("Component deleted");
                   }}
                   className="p-2 rounded-md border border-border hover:bg-destructive/10"
                 >

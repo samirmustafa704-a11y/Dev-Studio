@@ -34,6 +34,7 @@ export function Snippets({ selectedId }: { selectedId?: string }) {
     };
     upsertSnippet(s);
     select(s.id);
+    toast.success("Snippet created");
   };
 
   const update = (patch: Partial<Snippet>) => {
@@ -133,6 +134,7 @@ export function Snippets({ selectedId }: { selectedId?: string }) {
                   onClick={() => {
                     deleteSnippet(selected.id);
                     navigate({ search: (prev) => ({ ...prev, id: undefined }) });
+                    toast.success("Snippet deleted");
                   }}
                   className="p-2 rounded-md border border-border hover:bg-destructive/10"
                 >

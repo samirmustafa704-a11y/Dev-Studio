@@ -44,6 +44,7 @@ export function Templates({ selectedId }: { selectedId?: string }) {
     };
     upsertTemplate(t);
     select(t.id);
+    toast.success("Template created");
   };
 
   const update = (patch: Partial<Template>) => {
@@ -145,7 +146,8 @@ export function Templates({ selectedId }: { selectedId?: string }) {
               <button
                 onClick={() => {
                   deleteTemplate(selected.id);
-                    navigate({ search: (prev) => ({ ...prev, id: undefined }) });
+                  navigate({ search: (prev) => ({ ...prev, id: undefined }) });
+                  toast.success("Template deleted");
                 }}
                 className="p-2 rounded-md border border-border hover:bg-destructive/10 self-end sm:self-auto mt-2 sm:mt-0"
               >
