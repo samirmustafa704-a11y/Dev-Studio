@@ -81,7 +81,7 @@ export const useForge = create<ForgeState>()(
         if (get().initialized) return;
         set({ isLoading: true });
         try {
-          const user = await db.getCurrentUser();
+          const user = true;
           if (user) {
             const [p, a, c, s, conn, soc, mail, q, prog] = await Promise.all([
               db.getPrompts(),
@@ -568,37 +568,34 @@ export const useForge = create<ForgeState>()(
       },
 
       seedIfEmpty: async () => {
-        const user = await db.getCurrentUser();
-        if (!user) return;
-
         console.log("Seeding initial data...");
 
         const promptsData = seedPrompts.map(({ id, ...p }) => ({ 
           ...p, 
-          user_id: user.id,
+          user_id: 'local',
           body: p.body, 
           system_prompt: "" 
         }));
         const agentsData = seedAgents.map(({ id, ...a }) => ({ 
           ...a, 
-          user_id: user.id,
+          user_id: 'local',
           system_prompt: a.systemPrompt 
         }));
         const componentsData = seedComponents.map(({ id, ...c }) => ({
           ...c,
-          user_id: user.id
+          user_id: 'local'
         }));
         const snippetsData = seedSnippets.map(({ id, ...s }) => ({
           ...s,
-          user_id: user.id
+          user_id: 'local'
         }));
         const templatesData = seedTemplates.map(({ id, ...t }) => ({
           ...t,
-          user_id: user.id
+          user_id: 'local'
         }));
         const interviewQsData = [...seedInterviewQuestions, ...seedInterviewExtra].map(({ id, ...q }) => ({
           ...q,
-          user_id: user.id,
+          user_id: 'local',
           domain: q.area || q.category || 'frontend',
           answer_depths: (q.answerDepths || []) as unknown as Json
         }));

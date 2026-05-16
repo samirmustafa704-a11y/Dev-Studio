@@ -5,7 +5,7 @@ import { Loader2 } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { useForge } from "@/lib/store";
 
-const PUBLIC_ROUTES = ["/auth", "/reset-password"];
+const PUBLIC_ROUTES = ["/auth"];
 
 export function AuthGate() {
   const { isReady, user } = useAuth();
@@ -13,18 +13,14 @@ export function AuthGate() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const router = useRouter();
 
-  // Handle trailing slashes and nested public routes robustly
   const isPublic = PUBLIC_ROUTES.some(
-    (r) =>
-      pathname === r || pathname.startsWith(r + "/") || (r === "/auth" && pathname === "/auth/"),
+    (r) => pathname === r || pathname.startsWith(r + "/"),
   );
 
   const [loadingTime, setLoadingTime] = useState(0);
 
   useEffect(() => {
-    console.log("[AuthGate] State changed:", { isReady, user: !!user, isPublic, pathname });
     if (isReady && !user && !isPublic) {
-      console.log("[AuthGate] User not authenticated on protected route. Redirecting to /auth");
       router.navigate({ to: "/auth", replace: true }).catch((err) => {
         console.error("[AuthGate] Navigation to /auth failed:", err);
       });
@@ -38,10 +34,7 @@ export function AuthGate() {
   useEffect(() => {
     if (!isReady) {
       const interval = setInterval(() => {
-        setLoadingTime((t) => {
-          if (t === 2) console.warn("[AuthGate] isReady is still false after 3 seconds!");
-          return t + 1;
-        });
+        setLoadingTime((t) => t + 1);
       }, 1000);
       return () => clearInterval(interval);
     }
@@ -51,20 +44,14 @@ export function AuthGate() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background">
         <Loader2 className="size-8 animate-spin text-muted-foreground mb-4" />
-        {loadingTime > 2 && (
-          <div className="text-center text-sm text-red-500 max-w-md p-4 bg-red-500/10 rounded-md">
-            <p className="font-bold mb-2">Authentication is taking longer than expected.</p>
-            <p>Please check your browser console for errors.</p>
-            <p className="mt-2 text-xs opacity-70">
-              Supabase URL configured: {import.meta.env.VITE_SUPABASE_URL ? "Yes" : "No"} <br />
-              Supabase Key configured:{" "}
-              {import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ? "Yes" : "No"}
-            </p>
+        {loadingTime > 3 && (
+          <div className="text-center text-sm text-muted-foreground max-w-md p-4">
+            <p>Taking a moment to load…</p>
             <button
-              className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md"
+              className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm"
               onClick={() => window.location.reload()}
             >
-              Force Reload
+              Reload
             </button>
           </div>
         )}
@@ -77,7 +64,6 @@ export function AuthGate() {
   }
 
   if (!user) {
-    // We are currently redirecting to /auth, so we show a loading state
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="size-8 animate-spin text-muted-foreground" />

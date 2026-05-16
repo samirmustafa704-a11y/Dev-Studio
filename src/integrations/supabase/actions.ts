@@ -1,5 +1,3 @@
-import { supabase } from "./client";
-
 type LocalRecord = Record<string, unknown>;
 
 const emptyList = async (): Promise<LocalRecord[]> => [];
@@ -8,42 +6,24 @@ const passthroughList = async <T extends LocalRecord>(items: T[]): Promise<T[]> 
 const noop = async (..._args: unknown[]): Promise<void> => undefined;
 
 export async function getCurrentUser() {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  return user;
+  try {
+    const r = await fetch("/api/auth/user");
+    if (!r.ok) return null;
+    return r.json();
+  } catch {
+    return null;
+  }
 }
 
 export async function getProfile() {
-  const user = await getCurrentUser();
-  if (!user) return null;
-
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  if (error) throw error;
-  return data;
+  return null;
 }
 
-export async function updateProfile(profile: {
+export async function updateProfile(_profile: {
   display_name?: string | null;
   avatar_url?: string | null;
 }) {
-  const user = await getCurrentUser();
-  if (!user) throw new Error("Unauthorized");
-
-  const { data, error } = await supabase
-    .from("profiles")
-    .update(profile)
-    .eq("id", user.id)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
+  return null;
 }
 
 export const getPrompts = emptyList;

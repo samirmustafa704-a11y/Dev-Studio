@@ -1,10 +1,14 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import type { Session, User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+
+export interface ReplitUser {
+  id: string;
+  name: string;
+  email?: string;
+  profileImage?: string;
+}
 
 interface AuthContextValue {
-  session: Session | null;
-  user: User | null;
+  user: ReplitUser | null;
   isReady: boolean;
   signOut: () => Promise<void>;
 }
@@ -12,59 +16,27 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<ReplitUser | null>(null);
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    let subscription: { unsubscribe: () => void } | undefined;
-
-    // Failsafe: Force isReady to true after 2 seconds to prevent infinite loading
-    const timeoutId = setTimeout(() => {
-      console.warn("Auth initialization timed out. Forcing isReady to true.");
-      setIsReady(true);
-    }, 2000);
-
-    try {
-      const { data } = supabase.auth.onAuthStateChange((_event, s) => {
-        setSession(s);
-      });
-      subscription = data.subscription;
-
-      supabase.auth
-        .getSession()
-        .then(({ data: { session: s } }) => {
-          setSession(s);
-          setIsReady(true);
-          clearTimeout(timeoutId);
-        })
-        .catch((err) => {
-          console.error("Auth session error:", err);
-          setIsReady(true);
-          clearTimeout(timeoutId);
-        });
-    } catch (err) {
-      console.error("Auth initialization error:", err);
-      setIsReady(true);
-      clearTimeout(timeoutId);
-    }
-
-    return () => {
-      clearTimeout(timeoutId);
-      if (subscription) subscription.unsubscribe();
-    };
+    fetch("/api/auth/user")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data) setUser(data);
+      })
+      .catch(() => {})
+      .finally(() => setIsReady(true));
   }, []);
 
+  const signOut = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    setUser(null);
+    window.location.href = "/auth";
+  };
+
   return (
-    <AuthContext.Provider
-      value={{
-        session,
-        user: session?.user ?? null,
-        isReady,
-        signOut: async () => {
-          await supabase.auth.signOut();
-        },
-      }}
-    >
+    <AuthContext.Provider value={{ user, isReady, signOut }}>
       {children}
     </AuthContext.Provider>
   );
