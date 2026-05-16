@@ -255,6 +255,22 @@ export function registerRoutes(app: Express) {
     }
   });
 
+  app.post("/api/connectors/bulk", async (req, res) => {
+    const uid = requireUser(req, res); if (!uid) return;
+    const items = req.body as any[];
+    const result = await Promise.all(items.map(async ({ id, ...raw }) => {
+      const data = stripDates(raw);
+      const existing = id ? await db.select().from(connectors).where(and(eq(connectors.id, id), eq(connectors.userId, uid))) : [];
+      if (existing.length > 0) {
+        const [r] = await db.update(connectors).set({ ...data, updatedAt: new Date() }).where(eq(connectors.id, id)).returning();
+        return r;
+      }
+      const [r] = await db.insert(connectors).values({ ...data, userId: uid, ...(id ? { id } : {}) } as any).returning();
+      return r;
+    }));
+    res.json(result);
+  });
+
   app.delete("/api/connectors/:id", async (req, res) => {
     const uid = requireUser(req, res); if (!uid) return;
     await db.delete(connectors).where(and(eq(connectors.id, req.params.id), eq(connectors.userId, uid)));
@@ -281,6 +297,22 @@ export function registerRoutes(app: Express) {
     }
   });
 
+  app.post("/api/social-drafts/bulk", async (req, res) => {
+    const uid = requireUser(req, res); if (!uid) return;
+    const items = req.body as any[];
+    const result = await Promise.all(items.map(async ({ id, ...raw }) => {
+      const data = stripDates(raw);
+      const existing = id ? await db.select().from(socialDrafts).where(and(eq(socialDrafts.id, id), eq(socialDrafts.userId, uid))) : [];
+      if (existing.length > 0) {
+        const [r] = await db.update(socialDrafts).set({ ...data, updatedAt: new Date() }).where(eq(socialDrafts.id, id)).returning();
+        return r;
+      }
+      const [r] = await db.insert(socialDrafts).values({ ...data, userId: uid, ...(id ? { id } : {}) } as any).returning();
+      return r;
+    }));
+    res.json(result);
+  });
+
   app.delete("/api/social-drafts/:id", async (req, res) => {
     const uid = requireUser(req, res); if (!uid) return;
     await db.delete(socialDrafts).where(and(eq(socialDrafts.id, req.params.id), eq(socialDrafts.userId, uid)));
@@ -305,6 +337,22 @@ export function registerRoutes(app: Express) {
       const [r] = await db.insert(mailTemplates).values({ ...data, userId: uid, ...(id ? { id } : {}) } as any).returning();
       res.json(r);
     }
+  });
+
+  app.post("/api/mail-templates/bulk", async (req, res) => {
+    const uid = requireUser(req, res); if (!uid) return;
+    const items = req.body as any[];
+    const result = await Promise.all(items.map(async ({ id, ...raw }) => {
+      const data = stripDates(raw);
+      const existing = id ? await db.select().from(mailTemplates).where(and(eq(mailTemplates.id, id), eq(mailTemplates.userId, uid))) : [];
+      if (existing.length > 0) {
+        const [r] = await db.update(mailTemplates).set({ ...data, updatedAt: new Date() }).where(eq(mailTemplates.id, id)).returning();
+        return r;
+      }
+      const [r] = await db.insert(mailTemplates).values({ ...data, userId: uid, ...(id ? { id } : {}) } as any).returning();
+      return r;
+    }));
+    res.json(result);
   });
 
   app.delete("/api/mail-templates/:id", async (req, res) => {

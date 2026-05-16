@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { seedPrompts, seedAgents, seedComponents, seedTemplates, seedSnippets } from "@/data/seeds/tools";
 import { seedInterviewQuestions } from "@/data/seeds/interview-core";
 import { seedInterviewExtra } from "@/data/seeds/interview-extra";
+import { seedConnectors, seedSocialDrafts, seedMailTemplates } from "@/data/seeds/extras";
 
 interface ForgeState {
   prompts: Prompt[];
@@ -599,6 +600,22 @@ export const useForge = create<ForgeState>()(
           domain: q.area || q.category || 'frontend',
           answer_depths: (q.answerDepths || []) as unknown as Json
         }));
+        const connectorsData = seedConnectors.map(({ id, ...c }) => ({
+          ...c,
+          user_id: 'local',
+          id,
+        }));
+        const socialDraftsData = seedSocialDrafts.map(({ id, ...d }) => ({
+          ...d,
+          media_urls: d.mediaUrls,
+          user_id: 'local',
+          id,
+        }));
+        const mailTemplatesData = seedMailTemplates.map(({ id, ...m }) => ({
+          ...m,
+          user_id: 'local',
+          id,
+        }));
 
         try {
           await Promise.all([
@@ -608,16 +625,22 @@ export const useForge = create<ForgeState>()(
             db.upsertSnippets(snippetsData),
             db.upsertTemplates(templatesData),
             db.upsertInterviewQuestions(interviewQsData),
+            db.upsertConnectors(connectorsData),
+            db.upsertSocialDrafts(socialDraftsData),
+            db.upsertMailTemplates(mailTemplatesData),
           ]);
 
           // Refresh data
-          const [p, a, c, s, t, iq] = await Promise.all([
+          const [p, a, c, s, t, iq, conn, soc, mail] = await Promise.all([
             db.getPrompts(),
             db.getAgents(),
             db.getComponents(),
             db.getSnippets(),
             db.getTemplates(),
             db.getInterviewQuestions(),
+            db.getConnectors(),
+            db.getSocialDrafts(),
+            db.getMailTemplates(),
           ]);
 
           set({
@@ -692,6 +715,32 @@ export const useForge = create<ForgeState>()(
               tags: x.tags || [],
               favorite: x.is_global ?? false,
               createdAt: x.created_at ? new Date(x.created_at).getTime() : Date.now()
+            })),
+            connectors: conn.map((x: any) => ({
+              id: x.id,
+              type: x.type,
+              name: x.name,
+              email: x.email || undefined,
+              phone: x.phone || undefined,
+              notes: x.notes || undefined,
+              createdAt: x.created_at ? new Date(x.created_at).getTime() : Date.now(),
+              updatedAt: x.updated_at ? new Date(x.updated_at).getTime() : Date.now()
+            })),
+            socialDrafts: soc.map((x: any) => ({
+              id: x.id,
+              platform: x.platform,
+              content: x.content,
+              mediaUrls: x.media_urls || [],
+              createdAt: x.created_at ? new Date(x.created_at).getTime() : Date.now(),
+              updatedAt: x.updated_at ? new Date(x.updated_at).getTime() : Date.now()
+            })),
+            mailTemplates: mail.map((x: any) => ({
+              id: x.id,
+              channel: x.channel,
+              subject: x.subject || undefined,
+              content: x.content,
+              createdAt: x.created_at ? new Date(x.created_at).getTime() : Date.now(),
+              updatedAt: x.updated_at ? new Date(x.updated_at).getTime() : Date.now()
             })),
           });
           toast.success("Initial data synchronized!");
