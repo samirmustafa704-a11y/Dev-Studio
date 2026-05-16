@@ -1,365 +1,94 @@
-import { supabase as _supabase } from "./client";
+import { supabase } from "./client";
 
-// NOTE: Many of the tables referenced below (prompts, agents, components,
-// snippets, templates, connectors, social_drafts, mail_templates,
-// interview_questions, user_progress) are not yet provisioned in the
-// database. We cast to `any` to keep the build green while persistence is
-// still handled by the Zustand localStorage store. When the tables are
-// added, restore the typed `Database` import.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const supabase = _supabase as any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyInsert = any;
+type LocalRecord = Record<string, unknown>;
 
-// --- UTILS ---
+const emptyList = async (): Promise<LocalRecord[]> => [];
+const passthrough = async <T extends LocalRecord>(item: T): Promise<T> => item;
+const passthroughList = async <T extends LocalRecord>(items: T[]): Promise<T[]> => items;
+const noop = async (..._args: unknown[]): Promise<void> => undefined;
+
 export async function getCurrentUser() {
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   return user;
 }
 
-// --- PROMPTS ---
-export async function getPrompts() {
+export async function getProfile() {
+  const user = await getCurrentUser();
+  if (!user) return null;
+
   const { data, error } = await supabase
-    .from("prompts")
+    .from("profiles")
     .select("*")
-    .order("updated_at", { ascending: false });
+    .eq("id", user.id)
+    .maybeSingle();
+
   if (error) throw error;
   return data;
 }
 
-export async function upsertPrompt(prompt: AnyInsert) {
+export async function updateProfile(profile: {
+  display_name?: string | null;
+  avatar_url?: string | null;
+}) {
   const user = await getCurrentUser();
   if (!user) throw new Error("Unauthorized");
 
   const { data, error } = await supabase
-    .from("prompts")
-    .upsert({ ...prompt, user_id: user.id })
+    .from("profiles")
+    .update(profile)
+    .eq("id", user.id)
     .select()
     .single();
+
   if (error) throw error;
   return data;
 }
 
-export async function upsertPrompts(prompts: AnyInsert[]) {
-  const user = await getCurrentUser();
-  if (!user) throw new Error("Unauthorized");
+export const getPrompts = emptyList;
+export const upsertPrompt = passthrough;
+export const upsertPrompts = passthroughList;
+export const deletePrompt = noop;
 
-  const { data, error } = await supabase
-    .from("prompts")
-    .upsert(prompts.map((p) => ({ ...p, user_id: user.id })))
-    .select();
-  if (error) throw error;
-  return data;
-}
+export const getAgents = emptyList;
+export const upsertAgent = passthrough;
+export const upsertAgents = passthroughList;
+export const deleteAgent = noop;
 
-export async function deletePrompt(id: string) {
-  const { error } = await supabase.from("prompts").delete().eq("id", id);
-  if (error) throw error;
-}
+export const getComponents = emptyList;
+export const upsertComponent = passthrough;
+export const upsertComponents = passthroughList;
+export const deleteComponent = noop;
 
-// --- AGENTS ---
-export async function getAgents() {
-  const { data, error } = await supabase
-    .from("agents")
-    .select("*")
-    .order("updated_at", { ascending: false });
-  if (error) throw error;
-  return data;
-}
+export const getSnippets = emptyList;
+export const upsertSnippet = passthrough;
+export const upsertSnippets = passthroughList;
+export const deleteSnippet = noop;
 
-export async function upsertAgent(agent: AnyInsert) {
-  const user = await getCurrentUser();
-  if (!user) throw new Error("Unauthorized");
+export const getTemplates = emptyList;
+export const upsertTemplate = passthrough;
+export const upsertTemplates = passthroughList;
+export const deleteTemplate = noop;
 
-  const { data, error } = await supabase
-    .from("agents")
-    .upsert({ ...agent, user_id: user.id })
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
-}
+export const getConnectors = emptyList;
+export const upsertConnector = passthrough;
+export const deleteConnector = noop;
 
-export async function upsertAgents(agents: AnyInsert[]) {
-  const user = await getCurrentUser();
-  if (!user) throw new Error("Unauthorized");
+export const getSocialDrafts = emptyList;
+export const upsertSocialDraft = passthrough;
+export const deleteSocialDraft = noop;
 
-  const { data, error } = await supabase
-    .from("agents")
-    .upsert(agents.map((a) => ({ ...a, user_id: user.id })))
-    .select();
-  if (error) throw error;
-  return data;
-}
+export const getMailTemplates = emptyList;
+export const upsertMailTemplate = passthrough;
+export const deleteMailTemplate = noop;
 
-export async function deleteAgent(id: string) {
-  const { error } = await supabase.from("agents").delete().eq("id", id);
-  if (error) throw error;
-}
+export const getInterviewQuestions = emptyList;
+export const upsertInterviewQuestion = passthrough;
+export const upsertInterviewQuestions = passthroughList;
+export const deleteInterviewQuestion = noop;
 
-// --- COMPONENTS ---
-export async function getComponents() {
-  const { data, error } = await supabase
-    .from("components")
-    .select("*")
-    .order("updated_at", { ascending: false });
-  if (error) throw error;
-  return data;
-}
-
-export async function upsertComponent(component: AnyInsert) {
-  const user = await getCurrentUser();
-  if (!user) throw new Error("Unauthorized");
-
-  const { data, error } = await supabase
-    .from("components")
-    .upsert({ ...component, user_id: user.id })
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
-}
-
-export async function upsertComponents(components: AnyInsert[]) {
-  const user = await getCurrentUser();
-  if (!user) throw new Error("Unauthorized");
-
-  const { data, error } = await supabase
-    .from("components")
-    .upsert(components.map((c) => ({ ...c, user_id: user.id })))
-    .select();
-  if (error) throw error;
-  return data;
-}
-
-export async function deleteComponent(id: string) {
-  const { error } = await supabase.from("components").delete().eq("id", id);
-  if (error) throw error;
-}
-
-// --- SNIPPETS ---
-export async function getSnippets() {
-  const { data, error } = await supabase
-    .from("snippets")
-    .select("*")
-    .order("updated_at", { ascending: false });
-  if (error) throw error;
-  return data;
-}
-
-export async function upsertSnippet(snippet: AnyInsert) {
-  const user = await getCurrentUser();
-  if (!user) throw new Error("Unauthorized");
-
-  const { data, error } = await supabase
-    .from("snippets")
-    .upsert({ ...snippet, user_id: user.id })
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
-}
-
-export async function upsertSnippets(snippets: AnyInsert[]) {
-  const user = await getCurrentUser();
-  if (!user) throw new Error("Unauthorized");
-
-  const { data, error } = await supabase
-    .from("snippets")
-    .upsert(snippets.map((s) => ({ ...s, user_id: user.id })))
-    .select();
-  if (error) throw error;
-  return data;
-}
-
-export async function deleteSnippet(id: string) {
-  const { error } = await supabase.from("snippets").delete().eq("id", id);
-  if (error) throw error;
-}
-
-// --- TEMPLATES ---
-export async function getTemplates() {
-  const { data, error } = await supabase
-    .from("templates")
-    .select("*")
-    .order("updated_at", { ascending: false });
-  if (error) throw error;
-  return data;
-}
-
-export async function upsertTemplate(template: AnyInsert) {
-  const user = await getCurrentUser();
-  if (!user) throw new Error("Unauthorized");
-
-  const { data, error } = await supabase
-    .from("templates")
-    .upsert({ ...template, user_id: user.id })
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
-}
-
-export async function upsertTemplates(templates: AnyInsert[]) {
-  const user = await getCurrentUser();
-  if (!user) throw new Error("Unauthorized");
-
-  const { data, error } = await supabase
-    .from("templates")
-    .upsert(templates.map((t) => ({ ...t, user_id: user.id })))
-    .select();
-  if (error) throw error;
-  return data;
-}
-
-export async function deleteTemplate(id: string) {
-  const { error } = await supabase.from("templates").delete().eq("id", id);
-  if (error) throw error;
-}
-
-// --- CONNECTORS ---
-export async function getConnectors() {
-  const { data, error } = await supabase
-    .from("connectors")
-    .select("*")
-    .order("updated_at", { ascending: false });
-  if (error) throw error;
-  return data;
-}
-
-export async function upsertConnector(connector: AnyInsert) {
-  const user = await getCurrentUser();
-  if (!user) throw new Error("Unauthorized");
-
-  const { data, error } = await supabase
-    .from("connectors")
-    .upsert({ ...connector, user_id: user.id })
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
-}
-
-export async function deleteConnector(id: string) {
-  const { error } = await supabase.from("connectors").delete().eq("id", id);
-  if (error) throw error;
-}
-
-// --- SOCIAL DRAFTS ---
-export async function getSocialDrafts() {
-  const { data, error } = await supabase
-    .from("social_drafts")
-    .select("*")
-    .order("updated_at", { ascending: false });
-  if (error) throw error;
-  return data;
-}
-
-export async function upsertSocialDraft(draft: AnyInsert) {
-  const user = await getCurrentUser();
-  if (!user) throw new Error("Unauthorized");
-
-  const { data, error } = await supabase
-    .from("social_drafts")
-    .upsert({ ...draft, user_id: user.id })
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
-}
-
-export async function deleteSocialDraft(id: string) {
-  const { error } = await supabase.from("social_drafts").delete().eq("id", id);
-  if (error) throw error;
-}
-
-// --- MAIL TEMPLATES ---
-export async function getMailTemplates() {
-  const { data, error } = await supabase
-    .from("mail_templates")
-    .select("*")
-    .order("updated_at", { ascending: false });
-  if (error) throw error;
-  return data;
-}
-
-export async function upsertMailTemplate(template: AnyInsert) {
-  const user = await getCurrentUser();
-  if (!user) throw new Error("Unauthorized");
-
-  const { data, error } = await supabase
-    .from("mail_templates")
-    .upsert({ ...template, user_id: user.id })
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
-}
-
-export async function deleteMailTemplate(id: string) {
-  const { error } = await supabase.from("mail_templates").delete().eq("id", id);
-  if (error) throw error;
-}
-
-// --- INTERVIEW QUESTIONS ---
-export async function getInterviewQuestions() {
-  const { data, error } = await supabase
-    .from("interview_questions")
-    .select("*")
-    .order("domain", { ascending: true });
-  if (error) throw error;
-  return data;
-}
-
-export async function upsertInterviewQuestion(q: AnyInsert) {
-  const user = await getCurrentUser();
-  if (!user) throw new Error("Unauthorized");
-
-  const { data, error } = await supabase
-    .from("interview_questions")
-    .upsert({ ...q, user_id: user.id })
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
-}
-
-export async function upsertInterviewQuestions(qs: AnyInsert[]) {
-  const user = await getCurrentUser();
-  if (!user) throw new Error("Unauthorized");
-
-  const { data, error } = await supabase
-    .from("interview_questions")
-    .upsert(qs.map(q => ({ ...q, user_id: user.id })))
-    .select();
-  if (error) throw error;
-  return data;
-}
-
-export async function deleteInterviewQuestion(id: string) {
-  const { error } = await supabase.from("interview_questions").delete().eq("id", id);
-  if (error) throw error;
-}
-
-// --- PROGRESS ---
-export async function getUserProgress() {
-  const { data, error } = await supabase.from("user_progress").select("*");
-  if (error) throw error;
-  return data;
-}
-
-export async function toggleProgress(itemId: string, areaId: string, completed: boolean) {
-  const user = await getCurrentUser();
-  if (!user) throw new Error("Unauthorized");
-
-  const { error } = await supabase
-    .from("user_progress")
-    .upsert({
-      user_id: user.id,
-      item_id: itemId,
-      area_id: areaId,
-      completed,
-      updated_at: new Date().toISOString(),
-    });
-  if (error) throw error;
+export const getUserProgress = emptyList;
+export async function toggleProgress(..._args: unknown[]) {
+  return undefined;
 }
