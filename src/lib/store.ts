@@ -604,21 +604,18 @@ export const useForge = create<ForgeState>()(
           domain: q.area || q.category || 'frontend',
           answer_depths: (q.answerDepths || []) as unknown as Json
         }));
-        const connectorsData = seedConnectors.map(({ id, ...c }) => ({
+        const connectorsData = seedConnectors.map(({ id: _id, ...c }) => ({
           ...c,
           user_id: 'local',
-          id,
         }));
-        const socialDraftsData = seedSocialDrafts.map(({ id, ...d }) => ({
+        const socialDraftsData = seedSocialDrafts.map(({ id: _id, ...d }) => ({
           ...d,
           media_urls: d.mediaUrls,
           user_id: 'local',
-          id,
         }));
-        const mailTemplatesData = seedMailTemplates.map(({ id, ...m }) => ({
+        const mailTemplatesData = seedMailTemplates.map(({ id: _id, ...m }) => ({
           ...m,
           user_id: 'local',
-          id,
         }));
 
         try {
@@ -758,13 +755,13 @@ export const useForge = create<ForgeState>()(
         const state = get();
 
         const connectorsData = state.connectors.length === 0
-          ? seedConnectors.map(({ id, ...c }) => ({ ...c, user_id: 'local', id }))
+          ? seedConnectors.map(({ id: _id, ...c }) => ({ ...c, user_id: 'local' }))
           : [];
         const socialDraftsData = state.socialDrafts.length === 0
-          ? seedSocialDrafts.map(({ id, ...d }) => ({ ...d, media_urls: d.mediaUrls, user_id: 'local', id }))
+          ? seedSocialDrafts.map(({ id: _id, ...d }) => ({ ...d, media_urls: d.mediaUrls, user_id: 'local' }))
           : [];
         const mailTemplatesData = state.mailTemplates.length === 0
-          ? seedMailTemplates.map(({ id, ...m }) => ({ ...m, user_id: 'local', id }))
+          ? seedMailTemplates.map(({ id: _id, ...m }) => ({ ...m, user_id: 'local' }))
           : [];
 
         try {
@@ -814,7 +811,7 @@ export const useForge = create<ForgeState>()(
         }
       },
     }),
-    { name: "forgedev-store-supabase-v2" },
+    { name: "forgedev-store-v2" },
   ),
 );
 
