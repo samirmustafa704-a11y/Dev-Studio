@@ -1,7 +1,6 @@
 import { StateCreator } from "zustand";
 import { ForgeState } from "../types";
 import * as db from "@/lib/api";
-import { toast } from "sonner";
 import { Difficulty, FocusArea } from "@/types/common";
 import { Prompt, Agent } from "@/types/tools";
 import { seedPrompts, seedAgents, seedComponents, seedSnippets, seedTemplates } from "@/data/seeds/tools";
@@ -11,9 +10,12 @@ import { seedConnectors, seedSocialDrafts, seedMailTemplates } from "@/data/seed
 
 type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
+let _initInFlight = false;
+
 export const createCoreSlice: StateCreator<ForgeState, [["zustand/persist", unknown]], [], Partial<ForgeState>> = (set, get) => ({
   init: async () => {
-    if (get().initialized) return;
+    if (get().initialized || _initInFlight) return;
+    _initInFlight = true;
     set({ isLoading: true });
     try {
       const [p, a, c, t, s, conn, soc, mail, q, prog] = await Promise.all([
@@ -143,6 +145,7 @@ export const createCoreSlice: StateCreator<ForgeState, [["zustand/persist", unkn
     } catch (e) {
       console.error("Init store error:", e);
     } finally {
+      _initInFlight = false;
       set({ isLoading: false });
     }
   },
@@ -209,8 +212,6 @@ export const createCoreSlice: StateCreator<ForgeState, [["zustand/persist", unkn
       // Force refresh by re-initializing (or just updating state directly)
       set({ initialized: false });
       await get().init();
-      
-      toast.success("Initial data synchronized!");
     } catch (e) {
       console.error("Seeding error:", e);
     }
@@ -272,7 +273,6 @@ export const createCoreSlice: StateCreator<ForgeState, [["zustand/persist", unkn
           updatedAt: x.updated_at ? new Date(x.updated_at).getTime() : Date.now()
         })),
       });
-      toast.success("Network & comms data ready!");
     } catch (e) {
       console.error("Extras seeding error:", e);
     }

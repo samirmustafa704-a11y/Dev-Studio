@@ -19,6 +19,7 @@ import {
   Briefcase,
 } from "lucide-react";
 import { CommandPalette } from "./command-palette";
+import { ErrorBoundary } from "./error-boundary";
 import { UserMenu } from "@/components/auth/user-menu";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -350,7 +351,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <main className="flex-1 flex flex-col min-h-0">{children}</main>
+        <main className="flex-1 flex flex-col min-h-0">
+          <ErrorBoundary>{children}</ErrorBoundary>
+        </main>
       </div>
 
       <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
