@@ -4,7 +4,7 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "dev": "tsx server.ts",
+    "dev": "node_modules/.bin/tsx server.ts",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
